@@ -1014,3 +1014,94 @@ def do_task_create(gc, args):
         task = dict([item for item in task.items()
                      if item[0] not in ignore])
         utils.print_dict(task)
+
+
+class_names = ['total_images_number', 'total_snapshots_number',
+               'total_images_size', 'total_snapshots_size']
+
+
+def quotas_from_args(q, args):
+    for n in class_names:
+        v = getattr(args, n, None)
+        if v:
+            q[n] = int(v)
+
+
+@utils.arg('--total_images_number', metavar='<TOTAL_IMAGES_NUM>',
+           help=_('Total number of images by default.'))
+@utils.arg('--total_snapshots_number', metavar='<TOTAL_SNAPSHOTS_NUM>',
+           help=_('Total number of instance snapshots by default.'))
+@utils.arg('--total_images_size', metavar='<TOTAL_IMAGES_SIZE>',
+           help=_('Total size (in GB) of all images by default .'))
+@utils.arg('--total_snapshots_size', metavar='<TOTAL_SNAPSHOTS_SIZE>',
+           help=_('Total size (in GB) of all snapshots by default.'))
+def do_quota_class_update(gc, args):
+    """Specify quota defaults"""
+    has_updates = any([getattr(args, cls_name, None)
+                       for cls_name in class_names])
+    if not has_updates:
+        utils.exit('Please specify at least one class to update in request')
+
+    quota_classes = gc.quotas.get_quota_classes()
+    quotas_from_args(quota_classes, args)
+    quota_classes = gc.quotas.set_quota_classes(quota_classes)
+    utils.print_dict(quota_classes)
+
+
+def do_quota_class_show(gc, args):
+    """Request quota defaults"""
+    quota_classes = gc.quotas.get_quota_classes()
+    utils.print_dict(quota_classes)
+
+
+@utils.arg('scope', metavar='<QUOTA_SCOPE>',
+           help=_('Domain or project where to specify quotas.'))
+@utils.arg('--total_images_number', metavar='<TOTAL_IMAGES_NUM>',
+           help=_('Total number of images per scope.'))
+@utils.arg('--total_snapshots_number', metavar='<TOTAL_SNAPSHOTS_NUM>',
+           help=_('Total number of instance snapshots per scope.'))
+@utils.arg('--total_images_size', metavar='<TOTAL_IMAGES_SIZE>',
+           help=_('Total size (in GB) of all images per scope.'))
+@utils.arg('--total_snapshots_size', metavar='<TOTAL_SNAPSHOTS_SIZE>',
+           help=_('Total size (in GB) of all snapshots per scope.'))
+def do_quota_update(gc, args):
+    """Specify quotas for project or domain"""
+    if not args.scope:
+        utils.exit('Please specify project or domain where to update quotas')
+    has_updates = any([getattr(args, cls_name, None)
+                       for cls_name in class_names])
+    if not has_updates:
+        utils.exit('Please specify at least one quota to update in request')
+    quotas = gc.quotas.get_quotas(args.scope)
+    quotas_from_args(quotas, args)
+    quotas = gc.quotas.set_quotas(args.scope, quotas)
+    utils.print_dict(quotas)
+
+
+@utils.arg('scope', metavar='<QUOTA_SCOPE>',
+           help=_('Domain or project where to show quotas.'))
+def do_quota_show(gc, args):
+    """Request quotas for project or domain"""
+    if not args.scope:
+        utils.exit('Please specify project or domain where to show quotas')
+    quotas = gc.quotas.get_quotas(args.scope)
+    utils.print_dict(quotas)
+
+
+@utils.arg('scope', metavar='<QUOTA_SCOPE>',
+           help=_('Domain or project where to reset quotas.'))
+def do_quota_delete(gc, args):
+    """Reset domain or project quotas to default values"""
+    if not args.scope:
+        utils.exit('Please specify project or domain where to show quotas')
+    gc.quotas.reset_quotas(args.scope)
+
+
+@utils.arg('scope', metavar='<QUOTA_SCOPE>',
+           help=_('Domain or project where to show usage.'))
+def do_limits(gc, args):
+    """Request quota usage for project or domain"""
+    if not args.scope:
+        utils.exit('Please specify project or domain where to show limits')
+    usage = gc.quotas.get_usage(args.scope)
+    utils.print_dict(usage)

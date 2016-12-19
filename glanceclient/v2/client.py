@@ -20,6 +20,7 @@ from glanceclient.v2 import image_members
 from glanceclient.v2 import image_tags
 from glanceclient.v2 import images
 from glanceclient.v2 import metadefs
+from glanceclient.v2 import quotas
 from glanceclient.v2 import schemas
 from glanceclient.v2 import tasks
 from glanceclient.v2 import versions
@@ -66,3 +67,4 @@ class Client(object):
             metadefs.NamespaceController(self.http_client, self.schemas))
 
         self.versions = versions.VersionController(self.http_client)
+        self.quotas = quotas.QuotaController(self.http_client)

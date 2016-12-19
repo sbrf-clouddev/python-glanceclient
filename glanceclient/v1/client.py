@@ -18,6 +18,7 @@ from glanceclient.common import utils
 from glanceclient.v1 import image_members
 from glanceclient.v1 import images
 from glanceclient.v1 import versions
+from glanceclient.v2 import quotas
 
 
 class Client(object):
@@ -39,3 +40,4 @@ class Client(object):
         self.images = images.ImageManager(self.http_client)
         self.image_members = image_members.ImageMemberManager(self.http_client)
         self.versions = versions.VersionManager(self.http_client)
+        self.quotas = quotas.QuotaController(self.http_client)
